@@ -1,0 +1,14 @@
+{
+  "name": "douyin-comment-insights-free",
+  "version": "1.0.0",
+  "author": "xxjrq",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "test": "node scripts/self-test.mjs",
+    "self-test": "node scripts/self-test.mjs",
+    "check": "node --check scripts/douyin-comment-insights-free.mjs && node --check scripts/self-test.mjs && npm run self-test"
+  }
+}
