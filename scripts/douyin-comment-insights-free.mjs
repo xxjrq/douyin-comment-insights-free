@@ -25,6 +25,7 @@ const OBJECTION_RE = /但是|不过|不行|太贵|没用|无用|不支持|不兼
 const SENSITIVE_RULES = [
   { type: "email", pattern: /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi },
   { type: "phone", pattern: /(?<!\d)(?:\+?86[-\s]?)?1[3-9]\d{9}(?!\d)/g },
+  { type: "bearer", pattern: /\bBearer\s+[A-Za-z0-9._~+/=-]+/gi },
   { type: "secret", pattern: /(?:sk|pk)-[A-Za-z0-9_-]{16,}|(?:token|cookie|authorization|password|passwd|api[ _-]?key|验证码|密码)\s*[:=：]\s*[^\s,，;；]+/gi },
 ];
 
@@ -174,6 +175,14 @@ function makeReply(kind, item) {
   return `这个关于「${theme}」的顾虑很实际。建议先核对限制、成本和适用场景，再决定是否合适；当前评论样本不能代表全部用户。`;
 }
 
+function mergeRedactions(target, entries) {
+  for (const entry of entries) {
+    const existing = target.find((item) => item.type === entry.type);
+    if (existing) existing.count += entry.count;
+    else target.push({ type: entry.type, count: entry.count });
+  }
+}
+
 function buildInsights(comments) {
   const needs = comments.filter((item) => item.signals.need);
   const questions = comments.filter((item) => item.signals.question);
@@ -201,19 +210,19 @@ export function normalizeSnapshot(input, snapshot, options = {}) {
 
   const comments = [];
   const redactions = [];
+  const titleSanitized = sanitize(snapshot.title || "");
+  mergeRedactions(redactions, titleSanitized.redactions);
   for (const [offset, item] of visible.entries()) {
     const sanitized = sanitize(item.raw);
+    const likeSanitized = item.likeText ? sanitize(item.likeText) : null;
     comments.push({
       index: offset + 1,
       quote: sanitized.text,
-      ...(item.likeText ? { visibleLikeText: sanitize(item.likeText).text } : {}),
+      ...(likeSanitized ? { visibleLikeText: likeSanitized.text } : {}),
       signals: signalsFor(sanitized.text),
     });
-    for (const redaction of sanitized.redactions) {
-      const existing = redactions.find((entry) => entry.type === redaction.type);
-      if (existing) existing.count += redaction.count;
-      else redactions.push({ type: redaction.type, count: redaction.count });
-    }
+    mergeRedactions(redactions, sanitized.redactions);
+    if (likeSanitized) mergeRedactions(redactions, likeSanitized.redactions);
   }
   const mode = options.mode === "real" ? "real" : "mock";
   const capturedAt = options.capturedAt || new Date().toISOString();
@@ -233,7 +242,7 @@ export function normalizeSnapshot(input, snapshot, options = {}) {
       visibleCommentCount: comments.length,
     },
     sample: {
-      title: sanitize(snapshot.title || "").text || null,
+      title: titleSanitized.text || null,
       comments,
     },
     insights: buildInsights(comments),
