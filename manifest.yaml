@@ -1,9 +1,10 @@
 name: "douyin-comment-insights-free"
 display_name: "抖音评论洞察助手"
 slug: "douyin-comment-insights-free"
-version: "1.0.0"
+version: "1.0.1"
 category: "content-research"
 author: "xxjrq"
+repository: "https://github.com/xxjrq/douyin-comment-insights-free"
 description: "免费、免第三方内容 API Key，读取单个抖音作品当前可见评论样本，输出需求主题、问题、反对点、脱敏证据和回复草稿。"
 triggers:
   - "抖音评论分析"
