@@ -1,7 +1,7 @@
 name: "douyin-comment-insights-free"
 display_name: "抖音评论洞察助手"
 slug: "douyin-comment-insights-free"
-version: "1.0.1"
+version: "1.0.2"
 category: "content-research"
 author: "xxjrq"
 repository: "https://github.com/xxjrq/douyin-comment-insights-free"
